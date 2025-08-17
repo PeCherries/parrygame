@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <gbdk/platform.h>
+#include "splash.h"
 #include <gbdk/metasprites.h>
 
 BANKREF(splash)
