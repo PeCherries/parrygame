@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "assetts/splash.h"
 #include "assetts/splash.c"
+#include "assetts/menu.h"
+#include "assetts/menu.c"
 
 
 // Game states
@@ -50,7 +52,7 @@ void main(void) {
                 update_splash();
                 break;
             case STATE_MENU:
-                update_menu();
+                show_menu();
                 break;
         }
         wait_vbl_done(); // sync with display
@@ -79,22 +81,11 @@ void update_splash(void) {
 
 // -------- MENU --------
 void show_menu(void) {
-    // Clear screen (simple way: fill with blank tile 0)
-    fill_bkg_rect(0, 0, 20, 18, 0);
-
-    // Print menu title
-    gotoxy(6, 2);
-    printf("== MAIN MENU ==");
-
-    // Print items
-    for(uint8_t i=0; i<MENU_COUNT; i++) {
-        gotoxy(7, 5+i);
-        printf("%s", menu_items[i]);
-    }
-
-    // Draw cursor
-    gotoxy(5, 5 + menu_index);
-    printf(">");
+    fill_bkg_rect(0, 0, 31, 31, 0);
+    set_bkg_data(0, menu_TILE_COUNT, menu_tiles);
+    set_bkg_tiles(2, 5, menu_WIDTH, menu_HEIGHT, menu_MAP);  // 20x18 tiles for 160x144
+    SHOW_BKG;
+    move_bkg(0, 0);
 }
 
 void update_menu(void) {
