@@ -11,7 +11,7 @@
 #define splash_TILE_H 8
 #define splash_WIDTH 160
 #define splash_HEIGHT 144
-#define splash_TILE_COUNT 202
+#define splash_TILE_COUNT 204
 #define splash_PALETTE_COUNT 1
 #define splash_COLORS_PER_PALETTE 4
 #define splash_TOTAL_COLORS 4
@@ -22,6 +22,6 @@ extern const unsigned char splash_map[360];
 BANKREF_EXTERN(splash)
 
 extern const palette_color_t splash_palettes[4];
-extern const uint8_t splash_tiles[3232];
+extern const uint8_t splash_tiles[3264];
 
 #endif

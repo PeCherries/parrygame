@@ -8,22 +8,20 @@
 
 #define menu_TILE_ORIGIN 0
 #define menu_TILE_W 8
-#define menu_TILE_H 16
-#define menu_WIDTH 64
-#define menu_HEIGHT 48
-#define menu_TILE_COUNT 46
+#define menu_TILE_H 8
+#define menu_WIDTH 8
+#define menu_HEIGHT 6
+#define menu_TILE_COUNT 47
 #define menu_PALETTE_COUNT 1
 #define menu_COLORS_PER_PALETTE 4
 #define menu_TOTAL_COLORS 4
-#define menu_PIVOT_X 32
-#define menu_PIVOT_Y 24
-#define menu_PIVOT_W 64
-#define menu_PIVOT_H 48
-extern const metasprite_t* const menu_metasprites[1];
+#define menu_MAP_ATTRIBUTES 0
+extern const unsigned char menu_map[48];
+#define menu_map_attributes menu_map
 
 BANKREF_EXTERN(menu)
 
 extern const palette_color_t menu_palettes[4];
-extern const uint8_t menu_tiles[736];
+extern const uint8_t menu_tiles[752];
 
 #endif

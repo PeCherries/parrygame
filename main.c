@@ -52,8 +52,8 @@ void main(void) {
                 update_splash();
                 break;
             case STATE_MENU:
-                show_menu();
-                break;
+                update_menu();
+               // break;
         }
         wait_vbl_done(); // sync with display
     }
@@ -81,11 +81,25 @@ void update_splash(void) {
 
 // -------- MENU --------
 void show_menu(void) {
-    fill_bkg_rect(0, 0, 31, 31, 0);
-    set_bkg_data(0, menu_TILE_COUNT, menu_tiles);
-    set_bkg_tiles(2, 5, menu_WIDTH, menu_HEIGHT, menu_MAP);  // 20x18 tiles for 160x144
+    const unsigned char blank_tile[16] = {
+    0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00
+    };
+
+    // Ensure blank tile 0 exists
+    set_bkg_data(0, 1, blank_tile);
+
+    // Clear screen with blank tile
+    fill_bkg_rect(0, 0, 32, 32, 0);
+
+    // Load menu graphics
+    set_bkg_data(1, menu_TILE_COUNT, menu_tiles); // shift menu tiles up by 1
+    set_bkg_tiles(0, 0, 8, 6, menu_map);
+
     SHOW_BKG;
-    move_bkg(0, 0);
+    move_bkg(5, 5);
 }
 
 void update_menu(void) {
