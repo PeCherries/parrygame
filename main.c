@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include "assetts/splash.h"
 #include "assetts/splash.c"
-#include "assetts/menu.h"
-#include "assetts/menu.c"
+#include "assetts/menubg.h"
+#include "assetts/menubg.c"
 
 
 // Game states
@@ -22,7 +22,7 @@ const char *menu_items[] = {
     "HIGH SCORES",
     "ABOUT"
 };
-#define MENU_COUNT 4
+#define MENU_COUNT 3
 uint8_t menu_index = 0;
 
 // Function declarations
@@ -82,51 +82,32 @@ void show_splash(void) {
 
 
 void update_splash(void) {
-    if(joypad() & J_START) {  
+    if(joypad() & J_START ) {  
+        if (current_state==STATE_SPLASH){
+            show_menu();
         current_state = STATE_MENU; 
-        show_menu();
+        }
     }
 }
 
 
 // -------- MENU --------
 void show_menu(void) {
-    // Blank tile 0
-    const unsigned char blank_tile[16] = {
-    0x00,0x00,
-    0x00,0x00,  
-    0x00,0x00,  
-    0x00,0x00,  
-    0x00,0x00,  
-    0x00,0x00,  
-    0x00,0x00,  
-    0x00,0x00   
-};
-
-    set_bkg_data(0, 1, blank_tile);
-
-    // Clear screen
-    fill_bkg_rect(0, 0, 32, 32, 0);
-    uint8_t shifted_map[8*6];
-    // this is to offset stuff by 1 because then it can align ewith memory the right way?
-for (uint8_t i = 0; i < 8*6; i++) {
-    shifted_map[i] = menu_map[i] + 1;
-}
 
     // Load menu graphics
-    set_bkg_data(1, menu_TILE_COUNT, menu_tiles);
-    set_bkg_tiles(6, 6, 8, 6, shifted_map);
-
+    set_bkg_data(0, menubg_TILE_COUNT, menubg_tiles);
+    set_bkg_tiles(0, 0, 20,18, menubg_map);
+    SHOW_BKG;
     // Load cursor sprite
     set_sprite_data(0, 1, cursor_tile);
     set_sprite_tile(0, 0);  // sprite 0 = cursor
-    SHOW_SPRITES;
+    
 
     // Position cursor at first item
     menu_index = 0;
-    move_sprite(0, 16, 48 + menu_index * 16); // x=16, y=48 start
-    move_bkg(5, 5);
-    SHOW_BKG;
+    //move_sprite(0, 150, 120); // x=16, y=48 start
+    move_bkg(0, 0);
+    SHOW_SPRITES;
     
 
     current_state = STATE_MENU;
@@ -144,12 +125,10 @@ void update_menu(void) {
         delay(150);
     }
 
-    // Move cursor sprite instead of redrawing background
-    move_sprite(0, 16, 48 + menu_index * 16);
+    move_sprite(0, 50, 67 + menu_index * 16);
 
     if(keys & (J_START | J_A)) {
-        // Just as a placeholder
-        printf("You chose: %s", menu_items[menu_index]);
+
         delay(500);
     }
 }
