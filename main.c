@@ -9,7 +9,7 @@
 #include "assetts/spritemap-world.c"
 
 
-// Game states
+
 typedef enum {
     STATE_SPLASH,
     STATE_MENU,
@@ -18,7 +18,7 @@ typedef enum {
 
 GameState current_state = STATE_SPLASH;
 
-// Menu data
+
 const char *menu_items[] = {
     "NEW GAME",
     "LOAD GAME",
@@ -30,14 +30,17 @@ const char *menu_items[] = {
 #define PLAYER_DIRECTION_UP    6
 #define PLAYER_DIRECTION_RIGHT 12
 #define PLAYER_DIRECTION_LEFT  18
+
 uint8_t menu_index = 0;
 uint8_t x = 80;
 uint8_t y = 130;
 uint8_t player_direction;
 uint8_t player_animation_frame;
 uint8_t is_player_walking;
+uint8_t frame_skip = 8;
+uint8_t player_frame = 0;
 
-// Function declarations
+
 void show_splash(void);
 void update_splash(void);
 void show_menu(void);
@@ -59,13 +62,11 @@ const unsigned char cursor_tile[16] = {
     0x00,0x00
 };
 
-// -------- MAIN LOOP --------
 void main(void) {
 
     DISPLAY_ON;
     SHOW_BKG;
 
-    // Init fonts ONCE here
     font_init();
     font_set(font_load(font_ibm));
 
@@ -89,16 +90,14 @@ void main(void) {
 }
 
 
-// -------- SPLASH SCREEN --------
+
 void show_splash(void) {
-    // Load splash background tiles
     set_bkg_data(0, splash_TILE_COUNT, splash_tiles);
-    set_bkg_tiles(0, 0, 20, 18, splash_map);  // 20x18 tiles for 160x144
+    set_bkg_tiles(0, 0, 20, 18, splash_map);  
     SHOW_BKG;
-    // Position the background
+
     move_bkg(0, 0);
 }
-
 
 void update_splash(void) {
     if(joypad() & J_START ) {  
@@ -111,21 +110,18 @@ void update_splash(void) {
 }
 
 
-// -------- MENU --------
+
 void show_menu(void) {
 
-    // Load menu graphics
+
     set_bkg_data(0, menubg_TILE_COUNT, menubg_tiles);
     set_bkg_tiles(0, 0, 20,18, menubg_map);
     SHOW_BKG;
-    // Load cursor sprite
-    set_sprite_data(0, 1, cursor_tile);
-    set_sprite_tile(0, 0);  // sprite 0 = cursor
-    
 
-    // Position cursor at first item
+    set_sprite_data(0, 1, cursor_tile);
+    set_sprite_tile(0, 0);  
+    
     menu_index = 0;
-    //move_sprite(0, 150, 120); // x=16, y=48 start
     move_bkg(0, 0);
     move_sprite(0, 50, 67 + menu_index * 16);
     SHOW_SPRITES;
@@ -158,18 +154,17 @@ void update_menu(void) {
 }
 
 void init_level(void) {
-    // Load tileset for world
+
     set_bkg_data(0, 16, spritemap_world_tiles);
     set_sprite_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
 
-    // Fill background with 16x16 block #0
+
     for(uint8_t y = 0; y < 18; y += 2) {
         for(uint8_t x = 0; x < 20; x += 2) {
-            put_16x16_block(x, y, 0); // base tile index = 0
+            put_16x16_block(x, y, 0); 
         }
     }
 
-    // Example: set sprite 0 to use tile 3 (top-left corner of second 16x16 block)
     set_sprite_tile(0, 25);
     set_sprite_tile(1, 26);
     set_sprite_tile(2, 34);
@@ -182,8 +177,7 @@ void init_level(void) {
     SHOW_SPRITES;
     SHOW_BKG;
 }
-    uint8_t frame_skip = 8;
-    uint8_t player_frame = 0;
+
 void update_level(void){
     wait_vbl_done();
     uint8_t keys = joypad();
@@ -201,7 +195,7 @@ void update_level(void){
             is_player_walking = 1;
         } else {
             is_player_walking = 0;
-            frame_skip = 1;  // Force refresh of the animation frame
+            frame_skip = 1; 
         }
 
         // Update the player position if it is walking
@@ -220,8 +214,6 @@ void update_level(void){
                 player_frame = player_animation(player_direction,player_frame);
                 frame_skip = 6;
             }
-            // We do not update the animation on each frame: the animation
-            // will be too quick. So we skip frames
             
 }}
 
@@ -235,6 +227,7 @@ void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
 
     set_bkg_tiles(x, y, 2, 2, block);
 }
+
 uint8_t player_animation(uint8_t player_direction,uint8_t player_frame){
     if(player_direction==PLAYER_DIRECTION_LEFT){
         if(player_frame==1){
@@ -256,7 +249,6 @@ uint8_t player_animation(uint8_t player_direction,uint8_t player_frame){
 if(player_direction==PLAYER_DIRECTION_RIGHT){
         if(player_frame==1){
             player_frame = 0;
-            // tile index = column + row * witdth of tilemap
                 set_sprite_tile(0,29);
                 set_sprite_tile(1, 30);
                 set_sprite_tile(2, 37);
@@ -273,7 +265,6 @@ if(player_direction==PLAYER_DIRECTION_RIGHT){
 if(player_direction==PLAYER_DIRECTION_UP){
         if(player_frame==1){
             player_frame = 0;
-            // tile index = column + row * witdth of tilemap
                 set_sprite_tile(0,9);
                 set_sprite_tile(1, 10);
                 set_sprite_tile(2, 17);
@@ -290,7 +281,6 @@ if(player_direction==PLAYER_DIRECTION_UP){
 if(player_direction==PLAYER_DIRECTION_DOWN){
         if(player_frame==1){
             player_frame = 0;
-            // tile index = column + row * witdth of tilemap
                 set_sprite_tile(0,25);
                 set_sprite_tile(1, 26);
                 set_sprite_tile(2, 33);
