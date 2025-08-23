@@ -5,12 +5,15 @@
 #include "assetts/splash.c"
 #include "assetts/menubg.h"
 #include "assetts/menubg.c"
+#include "assetts/spritemap-world.h"
+#include "assetts/spritemap-world.c"
 
 
 // Game states
 typedef enum {
     STATE_SPLASH,
-    STATE_MENU
+    STATE_MENU,
+    STATE_LEVEL
 } GameState;
 
 GameState current_state = STATE_SPLASH;
@@ -30,7 +33,10 @@ void show_splash(void);
 void update_splash(void);
 void show_menu(void);
 void update_menu(void);
+void init_level(void);
 void gotoxy(int x, int y);
+void update_level(void);
+void put_16x16_block(uint8_t x, uint8_t y, uint8_t base_tile);
 
 const unsigned char cursor_tile[16] = {
     0x18,0x18,
@@ -64,6 +70,9 @@ void main(void) {
             case STATE_MENU:
                 update_menu();
                 break;
+            case STATE_LEVEL:
+                update_level();
+                break;
         }
         wait_vbl_done(); // sync with display
     }
@@ -84,6 +93,7 @@ void show_splash(void) {
 void update_splash(void) {
     if(joypad() & J_START ) {  
         if (current_state==STATE_SPLASH){
+            delay(100);
             show_menu();
         current_state = STATE_MENU; 
         }
@@ -107,6 +117,7 @@ void show_menu(void) {
     menu_index = 0;
     //move_sprite(0, 150, 120); // x=16, y=48 start
     move_bkg(0, 0);
+    move_sprite(0, 50, 67 + menu_index * 16);
     SHOW_SPRITES;
     
 
@@ -114,21 +125,58 @@ void show_menu(void) {
 }
 
 void update_menu(void) {
+
     uint8_t keys = joypad();
 
     if(keys & J_UP) {
         if(menu_index > 0) menu_index--;
+        move_sprite(0, 50, 67 + menu_index * 16);
         delay(150);
     }
     if(keys & J_DOWN) {
         if(menu_index < MENU_COUNT-1) menu_index++;
+        move_sprite(0, 50, 67 + menu_index * 16);
         delay(150);
     }
-
-    move_sprite(0, 50, 67 + menu_index * 16);
-
     if(keys & (J_START | J_A)) {
-
-        delay(500);
+        init_level(); 
+        current_state = STATE_LEVEL;
     }
+    
+
+    
+}
+
+void init_level(void) {
+    // Load tileset for world
+    set_bkg_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
+    set_sprite_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
+
+    // Fill background with 16x16 block #0
+    for(uint8_t y = 0; y < 18; y += 2) {
+        for(uint8_t x = 0; x < 20; x += 2) {
+            put_16x16_block(x, y, 0); // base tile index = 0
+        }
+    }
+
+    // Example: set sprite 0 to use tile 3 (top-left corner of second 16x16 block)
+    set_sprite_tile(0, 3);
+
+    SHOW_SPRITES;
+    SHOW_BKG;
+}
+
+void update_level(void){
+
+}
+
+void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
+    uint8_t base_tile = logical_index * 4;
+
+    unsigned char block[4] = {
+        base_tile, base_tile + 1,
+        base_tile + 6, base_tile + 7
+    };
+
+    set_bkg_tiles(x, y, 2, 2, block);
 }
