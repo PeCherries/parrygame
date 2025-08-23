@@ -26,7 +26,16 @@ const char *menu_items[] = {
     "ABOUT"
 };
 #define MENU_COUNT 3
+#define PLAYER_DIRECTION_DOWN  0
+#define PLAYER_DIRECTION_UP    6
+#define PLAYER_DIRECTION_RIGHT 12
+#define PLAYER_DIRECTION_LEFT  18
 uint8_t menu_index = 0;
+uint8_t x = 80;
+uint8_t y = 130;
+uint8_t player_direction;
+uint8_t player_animation_frame;
+uint8_t is_player_walking;
 
 // Function declarations
 void show_splash(void);
@@ -37,6 +46,7 @@ void init_level(void);
 void gotoxy(int x, int y);
 void update_level(void);
 void put_16x16_block(uint8_t x, uint8_t y, uint8_t base_tile);
+uint8_t player_animation(uint8_t player_direction, uint8_t player_frame);
 
 const unsigned char cursor_tile[16] = {
     0x18,0x18,
@@ -164,20 +174,56 @@ void init_level(void) {
     set_sprite_tile(1, 26);
     set_sprite_tile(2, 34);
     set_sprite_tile(3, 35);
-    uint8_t x = 80;
-    uint8_t y = 130;
     move_sprite(0, x, y);       
     move_sprite(1, x+8, y);     
     move_sprite(2, x, y+8);     
     move_sprite(3, x+8, y+8);   
-
+    wait_vbl_done();
     SHOW_SPRITES;
     SHOW_BKG;
 }
-
+    uint8_t frame_skip = 8;
+    uint8_t player_frame = 0;
 void update_level(void){
+    wait_vbl_done();
+    uint8_t keys = joypad();
+        if (keys & J_UP) {
+            player_direction = PLAYER_DIRECTION_UP;
+            is_player_walking = 1;
+        } else if (keys & J_DOWN) {
+            player_direction = PLAYER_DIRECTION_DOWN;
+            is_player_walking = 1;
+        } else if (keys & J_LEFT) {
+            player_direction = PLAYER_DIRECTION_LEFT;
+            is_player_walking = 1;
+        } else if (keys & J_RIGHT) {
+            player_direction = PLAYER_DIRECTION_RIGHT;
+            is_player_walking = 1;
+        } else {
+            is_player_walking = 0;
+            frame_skip = 1;  // Force refresh of the animation frame
+        }
 
-}
+        // Update the player position if it is walking
+        if (is_player_walking) {
+            if (player_direction == PLAYER_DIRECTION_RIGHT) x += 1;
+            else if (player_direction == PLAYER_DIRECTION_LEFT) x -= 1;
+            else if (player_direction == PLAYER_DIRECTION_UP) y -= 1;
+            else if (player_direction == PLAYER_DIRECTION_DOWN) y += 1;
+                move_sprite(0, x, y);       
+                move_sprite(1, x+8, y);     
+                move_sprite(2, x, y+8);     
+                move_sprite(3, x+8, y+8);  
+
+                frame_skip -= 1;
+            if (frame_skip < 1){
+                player_frame = player_animation(player_direction,player_frame);
+                frame_skip = 6;
+            }
+            // We do not update the animation on each frame: the animation
+            // will be too quick. So we skip frames
+            
+}}
 
 void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
     uint8_t base_tile = logical_index * 4;
@@ -188,4 +234,75 @@ void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
     };
 
     set_bkg_tiles(x, y, 2, 2, block);
+}
+uint8_t player_animation(uint8_t player_direction,uint8_t player_frame){
+    if(player_direction==PLAYER_DIRECTION_LEFT){
+        if(player_frame==1){
+            player_frame = 0;
+            // tile index = column + row * witdth of tilemap
+                set_sprite_tile(0,13);
+                set_sprite_tile(1, 14);
+                set_sprite_tile(2, 21);
+                set_sprite_tile(3, 22);
+        }
+        else{player_frame = 1;
+                set_sprite_tile(0, 15);
+                set_sprite_tile(1, 16);
+                set_sprite_tile(2, 23);
+                set_sprite_tile(3, 24);
+    }
+
+}
+if(player_direction==PLAYER_DIRECTION_RIGHT){
+        if(player_frame==1){
+            player_frame = 0;
+            // tile index = column + row * witdth of tilemap
+                set_sprite_tile(0,29);
+                set_sprite_tile(1, 30);
+                set_sprite_tile(2, 37);
+                set_sprite_tile(3, 38);
+        }
+        else{player_frame = 1;
+                set_sprite_tile(0, 31);
+                set_sprite_tile(1, 32);
+                set_sprite_tile(2, 39);
+                set_sprite_tile(3, 40);
+    }
+
+}
+if(player_direction==PLAYER_DIRECTION_UP){
+        if(player_frame==1){
+            player_frame = 0;
+            // tile index = column + row * witdth of tilemap
+                set_sprite_tile(0,9);
+                set_sprite_tile(1, 10);
+                set_sprite_tile(2, 17);
+                set_sprite_tile(3, 18);
+        }
+        else{player_frame = 1;
+                set_sprite_tile(0, 11);
+                set_sprite_tile(1, 12);
+                set_sprite_tile(2, 19);
+                set_sprite_tile(3, 20);
+    }
+
+}
+if(player_direction==PLAYER_DIRECTION_DOWN){
+        if(player_frame==1){
+            player_frame = 0;
+            // tile index = column + row * witdth of tilemap
+                set_sprite_tile(0,25);
+                set_sprite_tile(1, 26);
+                set_sprite_tile(2, 33);
+                set_sprite_tile(3, 34);
+        }
+        else{player_frame = 1;
+                set_sprite_tile(0, 27);
+                set_sprite_tile(1, 28);
+                set_sprite_tile(2, 35);
+                set_sprite_tile(3, 36);
+    }
+
+}
+return player_frame;
 }

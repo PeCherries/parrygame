@@ -11,7 +11,7 @@
 #define spritemap_world_TILE_H 8
 #define spritemap_world_WIDTH 160
 #define spritemap_world_HEIGHT 144
-#define spritemap_world_TILE_COUNT 79
+#define spritemap_world_TILE_COUNT 85
 #define spritemap_world_PALETTE_COUNT 1
 #define spritemap_world_COLORS_PER_PALETTE 4
 #define spritemap_world_TOTAL_COLORS 4
@@ -22,6 +22,6 @@ extern const unsigned char spritemap_world_map[360];
 BANKREF_EXTERN(spritemap_world)
 
 extern const palette_color_t spritemap_world_palettes[4];
-extern const uint8_t spritemap_world_tiles[1264];
+extern const uint8_t spritemap_world_tiles[1360];
 
 #endif
