@@ -1,1 +1,4 @@
-testingS
+do stuff with GBDK repo
+
+gbdk/lib/lcc to compile c files into gb files
+gbdk/bin/png2assett to turn png to tilemap c and h files
