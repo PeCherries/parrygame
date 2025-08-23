@@ -149,7 +149,7 @@ void update_menu(void) {
 
 void init_level(void) {
     // Load tileset for world
-    set_bkg_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
+    set_bkg_data(0, 16, spritemap_world_tiles);
     set_sprite_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
 
     // Fill background with 16x16 block #0
@@ -160,7 +160,16 @@ void init_level(void) {
     }
 
     // Example: set sprite 0 to use tile 3 (top-left corner of second 16x16 block)
-    set_sprite_tile(0, 3);
+    set_sprite_tile(0, 25);
+    set_sprite_tile(1, 26);
+    set_sprite_tile(2, 34);
+    set_sprite_tile(3, 35);
+    uint8_t x = 80;
+    uint8_t y = 130;
+    move_sprite(0, x, y);       
+    move_sprite(1, x+8, y);     
+    move_sprite(2, x, y+8);     
+    move_sprite(3, x+8, y+8);   
 
     SHOW_SPRITES;
     SHOW_BKG;
