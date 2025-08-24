@@ -30,6 +30,8 @@ const char *menu_items[] = {
 #define PLAYER_DIRECTION_UP    6
 #define PLAYER_DIRECTION_RIGHT 12
 #define PLAYER_DIRECTION_LEFT  18
+#define PLAYER_SPRITES 4
+#define LAMP_SPRITES 8
 
 uint8_t menu_index = 0;
 uint8_t x = 80;
@@ -39,7 +41,6 @@ uint8_t player_animation_frame;
 uint8_t is_player_walking;
 uint8_t frame_skip = 8;
 uint8_t player_frame = 0;
-
 
 void show_splash(void);
 void update_splash(void);
@@ -102,7 +103,7 @@ void show_splash(void) {
 void update_splash(void) {
     if(joypad() & J_START ) {  
         if (current_state==STATE_SPLASH){
-            delay(100);
+            wait_vbl_done();
             show_menu();
         current_state = STATE_MENU; 
         }
@@ -159,23 +160,50 @@ void init_level(void) {
     set_sprite_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
 
 
-    for(uint8_t y = 0; y < 18; y += 2) {
-        for(uint8_t x = 0; x < 20; x += 2) {
+    for(uint8_t y = 0; y < 32; y += 2) {
+        for(uint8_t x = 0; x < 32; x += 2) {
             put_16x16_block(x, y, 0); 
         }
     }
-
+    
+//SET MY GUY
+    set_sprite_tile(9, 58);
+    set_sprite_tile(10, 63);
+    set_sprite_tile(11, 63);
+    set_sprite_prop(11, S_FLIPX);
+    
     set_sprite_tile(0, 25);
     set_sprite_tile(1, 26);
     set_sprite_tile(2, 34);
     set_sprite_tile(3, 35);
+
     move_sprite(0, x, y);       
     move_sprite(1, x+8, y);     
     move_sprite(2, x, y+8);     
     move_sprite(3, x+8, y+8);   
+
+    // SET LAMP! this is so dumb i know i could use metasprites
+    set_sprite_tile(4, 43);
+    set_sprite_tile(5, 44);
+    set_sprite_tile(6, 51);
+    set_sprite_tile(7, 52);
+    set_sprite_tile(8, 57);
+
+
+    move_sprite(11, x+15+8, y-8); 
+    move_sprite(10, x+15, y-8); 
+    move_sprite(9, x+15+8, y-16); 
+    move_sprite(8, x+15, y-16); 
+    move_sprite(7, x+15+8, y-24); 
+    move_sprite(6, x+15, y-24); 
+    move_sprite(5, x+15+8, y-32); 
+    move_sprite(4, x+15, y-32); 
+
+
     wait_vbl_done();
     SHOW_SPRITES;
     SHOW_BKG;
+    scroll_bkg(48,112);
 }
 
 void update_level(void){
@@ -204,6 +232,7 @@ void update_level(void){
             else if (player_direction == PLAYER_DIRECTION_LEFT) x -= 1;
             else if (player_direction == PLAYER_DIRECTION_UP) y -= 1;
             else if (player_direction == PLAYER_DIRECTION_DOWN) y += 1;
+                
                 move_sprite(0, x, y);       
                 move_sprite(1, x+8, y);     
                 move_sprite(2, x, y+8);     
@@ -229,6 +258,8 @@ void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
 }
 
 uint8_t player_animation(uint8_t player_direction,uint8_t player_frame){
+    
+
     if(player_direction==PLAYER_DIRECTION_LEFT){
         if(player_frame==1){
             player_frame = 0;
