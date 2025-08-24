@@ -127,8 +127,9 @@ void show_menu(void) {
     move_sprite(0, 50, 67 + menu_index * 16);
     SHOW_SPRITES;
     
-
+    
     current_state = STATE_MENU;
+    delay(500);
 }
 
 void update_menu(void) {
@@ -146,6 +147,7 @@ void update_menu(void) {
         delay(150);
     }
     if(keys & (J_START | J_A)) {
+        wait_vbl_done();
         init_level(); 
         current_state = STATE_LEVEL;
     }
@@ -171,7 +173,7 @@ void init_level(void) {
     set_sprite_tile(10, 63);
     set_sprite_tile(11, 63);
     set_sprite_prop(11, S_FLIPX);
-    
+
     set_sprite_tile(0, 25);
     set_sprite_tile(1, 26);
     set_sprite_tile(2, 34);
