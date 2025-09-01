@@ -26,13 +26,6 @@ const char *menu_items[] = {
     "ABOUT"
 };
 
-typedef struct {
-    int8_t dx;
-    int8_t dy;
-    uint8_t tile;
-    uint8_t prop;
-} metasprite_t;
-
 #define MENU_COUNT 3
 #define PLAYER_DIRECTION_DOWN  0
 #define PLAYER_DIRECTION_UP    6
@@ -44,93 +37,6 @@ typedef struct {
 #define MAP_WIDTH 26
 
 #define TILE_SIZE 8  // Game Boy tiles are 8x8
-
-uint8_t check_collision(uint8_t new_x, uint8_t new_y) {
-    // Convert pixel coords to tile coords
-    uint8_t tile_x = new_x / TILE_SIZE;
-    uint8_t tile_y = new_y / TILE_SIZE;
-
-    // Simple bounds check
-    if(tile_x >= MAP_WIDTH || tile_y >= MAP_HEIGHT) return 1;
-
-    // 1 = solid, 0 = empty
-    return collision_map[tile_y][tile_x];
-}
-
-void move_metasprite(uint8_t sprite_index, const metasprite_t *ms, uint8_t x, uint8_t y, uint8_t flip) {
-    for(uint8_t i=0; ms[i].tile != 0xFF; i++) {
-        move_sprite(sprite_index+i, x + ms[i].dx, y + ms[i].dy);
-        set_sprite_tile(sprite_index+i, ms[i].tile);
-        set_sprite_prop(sprite_index+i, ms[i].prop | flip);
-    }
-}
-
-#define metasprite_end {0,0,0,0xFF}
-
-uint8_t menu_index = 0;
-uint8_t x = 80;
-uint8_t y = 130;
-uint8_t player_direction;
-uint8_t player_animation_frame;
-uint8_t is_player_walking;
-uint8_t frame_skip = 8;
-uint8_t player_frame = 0;
-
-
-void show_splash(void);
-void update_splash(void);
-void show_menu(void);
-void update_menu(void);
-void init_level(void);
-void gotoxy(int x, int y);
-void update_level(void);
-void put_16x16_block(uint8_t x, uint8_t y, uint8_t base_tile);
-uint8_t player_animation(uint8_t player_direction, uint8_t player_frame);
-
-const unsigned char cursor_tile[16] = {
-    0x18,0x18,
-    0x1C,0x1C,
-    0x1E,0x1E,
-    0x1C,0x1C,
-    0x18,0x18,
-    0x00,0x00,
-    0x00,0x00,
-    0x00,0x00
-};
-
-#include <gbdk/metasprites.h>
-
-const metasprite_t player_down[] = {
-    {0, 0, 27, 0},    // top-left
-    {8, 0, 28, 0},    // top-right
-    {0, 8, 35, 0},    // bottom-left
-    {8, 8, 36, 0},    // bottom-right
-    metasprite_end  // end marker
-};
-
-const metasprite_t player_up[] = {
-    {0, 0, 9, 0},
-    {8, 0, 10, 0},
-    {0, 8, 17, 0},
-    {8, 8, 18, 0},
-    metasprite_end
-};
-
-const metasprite_t player_left[] = {
-    {0, 0, 13, 0},
-    {8, 0, 14, 0},
-    {0, 8, 21, 0},
-    {8, 8, 22, 0},
-    metasprite_end
-};
-
-const metasprite_t player_right[] = {
-    {0, 0, 29, 0},
-    {8, 0, 30, 0},
-    {0, 8, 37, 0},
-    {8, 8, 38, 0},
-    metasprite_end
-};
 
 
 unsigned char collision_map[MAP_HEIGHT][MAP_WIDTH] = {
@@ -167,6 +73,104 @@ unsigned char collision_map[MAP_HEIGHT][MAP_WIDTH] = {
 { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 };
+
+uint8_t check_collision(uint8_t new_x, uint8_t new_y) {
+    // Convert pixel coords to tile coords
+    uint8_t tile_x = new_x / TILE_SIZE;
+    uint8_t tile_y = new_y / TILE_SIZE;
+
+    // Simple bounds check
+    if(tile_x >= MAP_WIDTH || tile_y >= MAP_HEIGHT) return 1;
+
+    // 1 = solid, 0 = empty
+    return collision_map[tile_y][tile_x];
+}
+
+
+uint8_t menu_index = 0;
+uint8_t x = 80;
+uint8_t y = 130;
+uint8_t player_direction;
+uint8_t player_animation_frame;
+uint8_t is_player_walking;
+uint8_t frame_skip = 8;
+uint8_t player_frame = 0;
+
+
+void show_splash(void);
+void update_splash(void);
+void show_menu(void);
+void update_menu(void);
+void init_level(void);
+void gotoxy(int x, int y);
+void update_level(void);
+void put_16x16_block(uint8_t x, uint8_t y, uint8_t base_tile);
+uint8_t player_animation(uint8_t player_direction, uint8_t player_frame);
+
+const unsigned char cursor_tile[16] = {
+    0x18,0x18,
+    0x1C,0x1C,
+    0x1E,0x1E,
+    0x1C,0x1C,
+    0x18,0x18,
+    0x00,0x00,
+    0x00,0x00,
+    0x00,0x00
+};
+
+#include <gbdk/metasprites.h>
+
+// --- DOWN ---
+const metasprite_t player_down_frame0[] = {
+    {0, 0, 27, 0}, {8, 0, 35, 0},
+    {-8, 8, 28, 0}, {8, 0, 36, 0},
+    {metasprite_end}
+};
+const metasprite_t player_down_frame1[] = {
+    {0, 0, 25, 0}, {8, 0, 33, 0},
+    {-8, 8, 26, 0}, {8, 0, 34, 0},
+    {metasprite_end}
+};
+
+// --- UP ---
+const metasprite_t player_up_frame0[] = {
+    {0, 0, 9, 0}, {8, 0, 17, 0},
+    {-8, 8, 10, 0}, {8, 0, 18, 0},
+    {metasprite_end}
+};
+const metasprite_t player_up_frame1[] = {
+    {0, 0, 11, 0}, {8, 0, 19, 0},
+    {-8, 8, 12, 0}, {8, 0, 20, 0},
+    {metasprite_end}
+};
+
+// --- LEFT ---
+const metasprite_t player_left_frame0[] = {
+    {0, 0, 13, 0}, {8, 0, 21, 0},
+    {-8, 8, 14, 0}, {8, 0, 22, 0},
+    {metasprite_end}
+};
+const metasprite_t player_left_frame1[] = {
+    {0, 0, 15, 0}, {8, 0, 23, 0},
+    {-8, 8, 16, 0}, {8, 0, 24, 0},
+    {metasprite_end}
+};
+
+// --- RIGHT ---
+const metasprite_t player_right_frame0[] = {
+    {0, 0, 29, 0}, {8, 0, 37, 0},
+    {-8, 8, 30, 0}, {8, 0, 38, 0},
+    {metasprite_end}
+};
+const metasprite_t player_right_frame1[] = {
+    {0, 0, 31, 0}, {8, 0, 39, 0},
+    {-8, 8, 32, 0}, {8, 0, 40, 0},
+    {metasprite_end}
+};
+
+
+
+
 
 void main(void) {
 
@@ -278,7 +282,7 @@ void init_level(void) {
     player_direction = PLAYER_DIRECTION_DOWN;
     player_frame = 0;
 
-    move_metasprite(player_down, 0, x, y,0);
+    move_metasprite(player_down_frame0, 0,0, x, y);
 
     SHOW_SPRITES;
     SHOW_BKG;
@@ -307,19 +311,31 @@ void update_level(void){
 
     // Animate and move metasprite
     if(is_player_walking) {
-        frame_skip--;
-        if(frame_skip < 1){
-            player_frame = player_animation(player_direction, player_frame);
-            frame_skip = 6;
-        }
+    frame_skip--;
+    if(frame_skip < 1) {
+        player_frame ^= 1; // toggle between 0 and 1
+        frame_skip = 6;
     }
+}
 
-    switch(player_direction){
-        case PLAYER_DIRECTION_DOWN:  move_metasprite(player_down, 0, x, y,0); break;
-        case PLAYER_DIRECTION_UP:    move_metasprite(player_up, 0, x, y,0); break;
-        case PLAYER_DIRECTION_LEFT:  move_metasprite(player_left, 0, x, y,0); break;
-        case PLAYER_DIRECTION_RIGHT: move_metasprite(player_right, 0, x, y,0); break;
-    }
+    switch(player_direction) {
+    case PLAYER_DIRECTION_DOWN:
+        if(player_frame == 0) move_metasprite(player_down_frame0, 0, 0, x, y);
+        else                  move_metasprite(player_down_frame1, 0, 0, x, y);
+        break;
+    case PLAYER_DIRECTION_UP:
+        if(player_frame == 0) move_metasprite(player_up_frame0, 0, 0, x, y);
+        else                  move_metasprite(player_up_frame1, 0, 0, x, y);
+        break;
+    case PLAYER_DIRECTION_LEFT:
+        if(player_frame == 0) move_metasprite(player_left_frame0, 0, 0, x, y);
+        else                  move_metasprite(player_left_frame1, 0, 0, x, y);
+        break;
+    case PLAYER_DIRECTION_RIGHT:
+        if(player_frame == 0) move_metasprite(player_right_frame0, 0, 0, x, y);
+        else                  move_metasprite(player_right_frame1, 0, 0, x, y);
+        break;
+}
 }
 
 
