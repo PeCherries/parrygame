@@ -98,6 +98,7 @@ uint8_t player_direction;
 uint8_t is_player_walking;
 uint8_t frame_skip = 8;
 uint8_t player_frame = 0;
+uint8_t move_counter = 0; 
 
 
 void show_splash(void);
@@ -308,7 +309,7 @@ void init_level(void) {
     if(cam_x > (MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH)) cam_x = MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH;
     if(cam_y > (MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT)) cam_y = MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT;
     move_metasprite_ex(player_right_frame0, 0,0,0, x - cam_x, y - cam_y);
-    
+    uint8_t move_counter = 0; 
     move_bkg(cam_x, cam_y);
     current_state = STATE_LEVEL;
 }
@@ -331,11 +332,12 @@ void update_level(void) {
     if(cam_y > (MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT)) cam_y = MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT;
 
     move_bkg(cam_x, cam_y);
-
+    move_counter++;
+    if (move_counter % 2 == 0){
     if(keys & J_UP)    { next_y--; player_direction = PLAYER_DIRECTION_UP;    is_player_walking = 1; }
     if(keys & J_DOWN)  { next_y++; player_direction = PLAYER_DIRECTION_DOWN;  is_player_walking = 1; }
     if(keys & J_LEFT)  { next_x--; player_direction = PLAYER_DIRECTION_LEFT;  is_player_walking = 1; }
-    if(keys & J_RIGHT) { next_x++; player_direction = PLAYER_DIRECTION_RIGHT; is_player_walking = 1; }
+    if(keys & J_RIGHT) { next_x++; player_direction = PLAYER_DIRECTION_RIGHT; is_player_walking = 1; }}
 
     if(!check_collision(next_x, next_y)) {
         x = next_x;
