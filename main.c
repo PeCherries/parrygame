@@ -7,7 +7,7 @@
 #include "assetts/menubg.c"
 #include "assetts/spritemap-world.h"
 #include "assetts/spritemap-world.c"
-#include <gbdk/metasprites.h>
+#include <gb/metasprites.h>
 
 
 typedef enum {
@@ -128,27 +128,29 @@ const metasprite_t player_down_frame0[] = {
     {-8, 8, 28, 0}, {8, 0, 36, 0},
     {metasprite_end}
 };
+
 const metasprite_t player_down_frame1[] = {
     {0, 0, 25, 0}, {8, 0, 33, 0},
     {-8, 8, 26, 0}, {8, 0, 34, 0},
     {metasprite_end}
 };
 
+
 // --- UP ---
 // --- UP ---
 const metasprite_t player_up_frame0[] = {
     {0, 0, 9, 0},   // top-left
     {8, 0, 17, 0},  // top-right
-    {0, 8, 10, 0},  // bottom-left
-    {8, 8, 18, 0},  // bottom-right
+    {-8, 8, 10, 0},  // bottom-left
+    {8, 0, 18, 0},  // bottom-right
     {metasprite_end}
 };
 
 const metasprite_t player_up_frame1[] = {
     {0, 0, 11, 0},  // top-left
     {8, 0, 19, 0},  // top-right
-    {0, 8, 12, 0},  // bottom-left
-    {8, 8, 20, 0},  // bottom-right
+    {-8, 8, 12, 0},  // bottom-left
+    {8, 0, 20, 0},  // bottom-right
     {metasprite_end}
 };
 
@@ -222,7 +224,7 @@ void update_splash(void) {
         if (current_state==STATE_SPLASH){
             wait_vbl_done();
             show_menu();
-        current_state = STATE_MENU; 
+         
         }
     }
 }
@@ -230,10 +232,10 @@ void update_splash(void) {
 
 
 void show_menu(void) {
-
-
+    
     set_bkg_data(0, menubg_TILE_COUNT, menubg_tiles);
     set_bkg_tiles(0, 0, 20,18, menubg_map);
+    wait_vbl_done();
     SHOW_BKG;
 
     set_sprite_data(0, 1, cursor_tile);
@@ -242,6 +244,7 @@ void show_menu(void) {
     menu_index = 0;
     move_bkg(0, 0);
     move_sprite(0, 50, 67 + menu_index * 16);
+    wait_vbl_done();
     SHOW_SPRITES;
     
     
@@ -266,7 +269,7 @@ void update_menu(void) {
     if(keys & (J_START | J_A)) {
         wait_vbl_done();
         init_level(); 
-        current_state = STATE_LEVEL;
+        
     }
     
 
@@ -289,30 +292,30 @@ void init_level(void) {
     x = (MAP_WIDTH * TILE_SIZE) / 2;
     y = (MAP_HEIGHT * TILE_SIZE) - 16;
 
-    player_direction = PLAYER_DIRECTION_DOWN;
+    player_direction = PLAYER_DIRECTION_RIGHT;
     player_frame = 0;
-
-    
-
+    wait_vbl_done();
     SHOW_BKG;
     SHOW_SPRITES;
 
     // Camera: center player
-    int cam_x = x - SCREEN_WIDTH / 2;
-    int cam_y = y - SCREEN_HEIGHT / 2;
+    int cam_x = x; //- SCREEN_WIDTH / 2;
+    int cam_y = y; //- SCREEN_HEIGHT / 2;
 
     // Clamp to map bounds
     if(cam_x < 0) cam_x = 0;
     if(cam_y < 0) cam_y = 0;
     if(cam_x > (MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH)) cam_x = MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH;
     if(cam_y > (MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT)) cam_y = MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT;
-    move_metasprite(player_down_frame0, 0,0, x - cam_x, y - cam_y);
+    move_metasprite_ex(player_right_frame0, 0,0,0, x - cam_x, y - cam_y);
+    
     move_bkg(cam_x, cam_y);
+    current_state = STATE_LEVEL;
 }
 
 // Call this every frame
 void update_level(void) {
-    wait_vbl_done();
+    
     uint8_t keys = joypad();
     is_player_walking = 0;
 
@@ -347,23 +350,44 @@ void update_level(void) {
         }
     }
 
+    // --- Draw player ---
+    uint8_t next_free = 0;  // will store the next available sprite index
+
     switch(player_direction) {
         case PLAYER_DIRECTION_DOWN:
-            move_metasprite(player_frame == 0 ? player_down_frame0 : player_down_frame1, 0, 0, x - cam_x, y - cam_y);
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_down_frame0 : player_down_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
             break;
         case PLAYER_DIRECTION_UP:
-            move_metasprite(player_frame == 0 ? player_up_frame0 : player_up_frame1, 0, 0, x - cam_x, y - cam_y);
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_up_frame0 : player_up_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
             break;
         case PLAYER_DIRECTION_LEFT:
-            move_metasprite(player_frame == 0 ? player_left_frame0 : player_left_frame1, 0, 0, x - cam_x, y - cam_y);
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_left_frame0 : player_left_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
             break;
         case PLAYER_DIRECTION_RIGHT:
-            move_metasprite(player_frame == 0 ? player_right_frame0 : player_right_frame1, 0, 0, x - cam_x, y - cam_y);
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_right_frame0 : player_right_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
             break;
     }
 
-    
+    // Hide any unused sprite objects
+    hide_sprites_range(next_free, MAX_HARDWARE_SPRITES);
 }
+
 
 
 void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
