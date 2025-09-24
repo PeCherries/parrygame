@@ -7,7 +7,7 @@
 #include "assetts/menubg.c"
 #include "assetts/spritemap-world.h"
 #include "assetts/spritemap-world.c"
-
+#include <gb/metasprites.h>
 
 
 typedef enum {
@@ -25,6 +25,7 @@ const char *menu_items[] = {
     "HIGH SCORES",
     "ABOUT"
 };
+
 #define MENU_COUNT 3
 #define PLAYER_DIRECTION_DOWN  0
 #define PLAYER_DIRECTION_UP    6
@@ -32,15 +33,73 @@ const char *menu_items[] = {
 #define PLAYER_DIRECTION_LEFT  18
 #define PLAYER_SPRITES 4
 #define LAMP_SPRITES 8
+#define MAP_HEIGHT 32
+#define MAP_WIDTH 26
+#define SCREEN_TILE_WIDTH  20
+#define SCREEN_TILE_HEIGHT 18
+#define SCREEN_WIDTH  (SCREEN_TILE_WIDTH * 8)
+#define SCREEN_HEIGHT (SCREEN_TILE_HEIGHT * 8)
+
+#define TILE_SIZE 8  // Game Boy tiles are 8x8
+
+
+unsigned char collision_map[MAP_HEIGHT][MAP_WIDTH] = {
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1},
+{1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1},
+{1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1},
+{1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1},
+{1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1},
+{1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1},
+{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+};
+
+uint8_t check_collision(uint8_t new_x, uint8_t new_y) {
+    // Convert pixel coords to tile coords
+    uint8_t tile_x = new_x / TILE_SIZE;
+    uint8_t tile_y = new_y / TILE_SIZE;
+
+    // Simple bounds check
+    if(tile_x >= MAP_WIDTH || tile_y >= MAP_HEIGHT) return 1;
+
+    // 1 = solid, 0 = empty
+    return collision_map[tile_y][tile_x];
+}
+
 
 uint8_t menu_index = 0;
 uint8_t x = 80;
 uint8_t y = 130;
 uint8_t player_direction;
-uint8_t player_animation_frame;
 uint8_t is_player_walking;
 uint8_t frame_skip = 8;
 uint8_t player_frame = 0;
+uint8_t move_counter = 0; 
+
 
 void show_splash(void);
 void update_splash(void);
@@ -50,7 +109,6 @@ void init_level(void);
 void gotoxy(int x, int y);
 void update_level(void);
 void put_16x16_block(uint8_t x, uint8_t y, uint8_t base_tile);
-uint8_t player_animation(uint8_t player_direction, uint8_t player_frame);
 
 const unsigned char cursor_tile[16] = {
     0x18,0x18,
@@ -63,10 +121,72 @@ const unsigned char cursor_tile[16] = {
     0x00,0x00
 };
 
+#include <gbdk/metasprites.h>
+
+// --- DOWN ---
+const metasprite_t player_down_frame0[] = {
+    {0, 0, 27, 0}, {8, 0, 35, 0},
+    {-8, 8, 28, 0}, {8, 0, 36, 0},
+    {metasprite_end}
+};
+
+const metasprite_t player_down_frame1[] = {
+    {0, 0, 25, 0}, {8, 0, 33, 0},
+    {-8, 8, 26, 0}, {8, 0, 34, 0},
+    {metasprite_end}
+};
+
+
+// --- UP ---
+// --- UP ---
+const metasprite_t player_up_frame0[] = {
+    {0, 0, 9, 0},   // top-left
+    {8, 0, 17, 0},  // top-right
+    {-8, 8, 10, 0},  // bottom-left
+    {8, 0, 18, 0},  // bottom-right
+    {metasprite_end}
+};
+
+const metasprite_t player_up_frame1[] = {
+    {0, 0, 11, 0},  // top-left
+    {8, 0, 19, 0},  // top-right
+    {-8, 8, 12, 0},  // bottom-left
+    {8, 0, 20, 0},  // bottom-right
+    {metasprite_end}
+};
+
+// --- LEFT ---
+const metasprite_t player_left_frame0[] = {
+    {0, 0, 13, 0}, {8, 0, 21, 0},
+    {-8, 8, 14, 0}, {8, 0, 22, 0},
+    {metasprite_end}
+};
+const metasprite_t player_left_frame1[] = {
+    {0, 0, 15, 0}, {8, 0, 23, 0},
+    {-8, 8, 16, 0}, {8, 0, 24, 0},
+    {metasprite_end}
+};
+
+// --- RIGHT ---
+const metasprite_t player_right_frame0[] = {
+    {0, 0, 29, 0}, {8, 0, 37, 0},
+    {-8, 8, 30, 0}, {8, 0, 38, 0},
+    {metasprite_end}
+};
+const metasprite_t player_right_frame1[] = {
+    {0, 0, 31, 0}, {8, 0, 39, 0},
+    {-8, 8, 32, 0}, {8, 0, 40, 0},
+    {metasprite_end}
+};
+
+
+
+
+
 void main(void) {
 
     DISPLAY_ON;
-    SHOW_BKG;
+    
 
     font_init();
     font_set(font_load(font_ibm));
@@ -105,7 +225,7 @@ void update_splash(void) {
         if (current_state==STATE_SPLASH){
             wait_vbl_done();
             show_menu();
-        current_state = STATE_MENU; 
+         
         }
     }
 }
@@ -113,10 +233,10 @@ void update_splash(void) {
 
 
 void show_menu(void) {
-
-
+    
     set_bkg_data(0, menubg_TILE_COUNT, menubg_tiles);
     set_bkg_tiles(0, 0, 20,18, menubg_map);
+    wait_vbl_done();
     SHOW_BKG;
 
     set_sprite_data(0, 1, cursor_tile);
@@ -125,6 +245,7 @@ void show_menu(void) {
     menu_index = 0;
     move_bkg(0, 0);
     move_sprite(0, 50, 67 + menu_index * 16);
+    wait_vbl_done();
     SHOW_SPRITES;
     
     
@@ -149,7 +270,7 @@ void update_menu(void) {
     if(keys & (J_START | J_A)) {
         wait_vbl_done();
         init_level(); 
-        current_state = STATE_LEVEL;
+        
     }
     
 
@@ -157,96 +278,119 @@ void update_menu(void) {
 }
 
 void init_level(void) {
-
-    set_bkg_data(0, 16, spritemap_world_tiles);
+    // Load tiles
+    set_bkg_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
     set_sprite_data(0, spritemap_world_TILE_COUNT, spritemap_world_tiles);
 
-
-    for(uint8_t y = 0; y < 32; y += 2) {
-        for(uint8_t x = 0; x < 32; x += 2) {
-            put_16x16_block(x, y, 0); 
+    // Fill map with 16x16 blocks
+    for(uint8_t by = 0; by < MAP_HEIGHT; by += 2) {
+        for(uint8_t bx = 0; bx < MAP_WIDTH; bx += 2) {
+            put_16x16_block(bx, by, 0);
         }
     }
-    
-//SET MY GUY
-    set_sprite_tile(9, 58);
-    set_sprite_tile(10, 63);
-    set_sprite_tile(11, 63);
-    set_sprite_prop(11, S_FLIPX);
 
-    set_sprite_tile(0, 25);
-    set_sprite_tile(1, 26);
-    set_sprite_tile(2, 34);
-    set_sprite_tile(3, 35);
+    // Set player bottom-middle
+    x = (MAP_WIDTH * TILE_SIZE) / 2;
+    y = (MAP_HEIGHT * TILE_SIZE) - 16;
 
-    move_sprite(0, x, y);       
-    move_sprite(1, x+8, y);     
-    move_sprite(2, x, y+8);     
-    move_sprite(3, x+8, y+8);   
-
-    // SET LAMP! this is so dumb i know i could use metasprites
-    set_sprite_tile(4, 43);
-    set_sprite_tile(5, 44);
-    set_sprite_tile(6, 51);
-    set_sprite_tile(7, 52);
-    set_sprite_tile(8, 57);
-
-
-    move_sprite(11, x+15+8, y-8); 
-    move_sprite(10, x+15, y-8); 
-    move_sprite(9, x+15+8, y-16); 
-    move_sprite(8, x+15, y-16); 
-    move_sprite(7, x+15+8, y-24); 
-    move_sprite(6, x+15, y-24); 
-    move_sprite(5, x+15+8, y-32); 
-    move_sprite(4, x+15, y-32); 
-
-
+    player_direction = PLAYER_DIRECTION_RIGHT;
+    player_frame = 0;
     wait_vbl_done();
-    SHOW_SPRITES;
     SHOW_BKG;
-    scroll_bkg(48,112);
+    SHOW_SPRITES;
+
+    // Camera: center player
+    int cam_x = x; //- SCREEN_WIDTH / 2;
+    int cam_y = y; //- SCREEN_HEIGHT / 2;
+
+    // Clamp to map bounds
+    if(cam_x < 0) cam_x = 0;
+    if(cam_y < 0) cam_y = 0;
+    if(cam_x > (MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH)) cam_x = MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH;
+    if(cam_y > (MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT)) cam_y = MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT;
+    move_metasprite_ex(player_right_frame0, 0,0,0, x - cam_x, y - cam_y);
+    uint8_t move_counter = 0; 
+    move_bkg(cam_x, cam_y);
+    current_state = STATE_LEVEL;
 }
 
-void update_level(void){
-    wait_vbl_done();
+// Call this every frame
+void update_level(void) {
+    
     uint8_t keys = joypad();
-        if (keys & J_UP) {
-            player_direction = PLAYER_DIRECTION_UP;
-            is_player_walking = 1;
-        } else if (keys & J_DOWN) {
-            player_direction = PLAYER_DIRECTION_DOWN;
-            is_player_walking = 1;
-        } else if (keys & J_LEFT) {
-            player_direction = PLAYER_DIRECTION_LEFT;
-            is_player_walking = 1;
-        } else if (keys & J_RIGHT) {
-            player_direction = PLAYER_DIRECTION_RIGHT;
-            is_player_walking = 1;
-        } else {
-            is_player_walking = 0;
-            frame_skip = 1; 
+    is_player_walking = 0;
+
+    int next_x = x;
+    int next_y = y;
+
+    int cam_x = x - SCREEN_WIDTH / 2;
+    int cam_y = y - SCREEN_HEIGHT / 2;
+
+    if(cam_x < 0) cam_x = 0;
+    if(cam_y < 0) cam_y = 0;
+    if(cam_x > (MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH)) cam_x = MAP_WIDTH * TILE_SIZE - SCREEN_WIDTH;
+    if(cam_y > (MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT)) cam_y = MAP_HEIGHT * TILE_SIZE - SCREEN_HEIGHT;
+
+    move_bkg(cam_x, cam_y);
+    move_counter++;
+    if (move_counter % 2 == 0){
+    if(keys & J_UP)    { next_y--; player_direction = PLAYER_DIRECTION_UP;    is_player_walking = 1; }
+    if(keys & J_DOWN)  { next_y++; player_direction = PLAYER_DIRECTION_DOWN;  is_player_walking = 1; }
+    if(keys & J_LEFT)  { next_x--; player_direction = PLAYER_DIRECTION_LEFT;  is_player_walking = 1; }
+    if(keys & J_RIGHT) { next_x++; player_direction = PLAYER_DIRECTION_RIGHT; is_player_walking = 1; }}
+
+    if(!check_collision(next_x, next_y)) {
+        x = next_x;
+        y = next_y;
+    }
+
+    if(is_player_walking) {
+        frame_skip--;
+        if(frame_skip < 1) {
+            player_frame ^= 1;
+            frame_skip = 6;
         }
+    }
 
-        // Update the player position if it is walking
-        if (is_player_walking) {
-            if (player_direction == PLAYER_DIRECTION_RIGHT) x += 1;
-            else if (player_direction == PLAYER_DIRECTION_LEFT) x -= 1;
-            else if (player_direction == PLAYER_DIRECTION_UP) y -= 1;
-            else if (player_direction == PLAYER_DIRECTION_DOWN) y += 1;
-                
-                move_sprite(0, x, y);       
-                move_sprite(1, x+8, y);     
-                move_sprite(2, x, y+8);     
-                move_sprite(3, x+8, y+8);  
+    // --- Draw player ---
+    uint8_t next_free = 0;  // will store the next available sprite index
 
-                frame_skip -= 1;
-            if (frame_skip < 1){
-                player_frame = player_animation(player_direction,player_frame);
-                frame_skip = 6;
-            }
-            
-}}
+    switch(player_direction) {
+        case PLAYER_DIRECTION_DOWN:
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_down_frame0 : player_down_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
+            break;
+        case PLAYER_DIRECTION_UP:
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_up_frame0 : player_up_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
+            break;
+        case PLAYER_DIRECTION_LEFT:
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_left_frame0 : player_left_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
+            break;
+        case PLAYER_DIRECTION_RIGHT:
+            next_free = move_metasprite_ex(
+                player_frame == 0 ? player_right_frame0 : player_right_frame1,
+                0, 0, 0,
+                x - cam_x, y - cam_y
+            );
+            break;
+    }
+
+    // Hide any unused sprite objects
+    hide_sprites_range(next_free, MAX_HARDWARE_SPRITES);
+}
+
+
 
 void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
     uint8_t base_tile = logical_index * 4;
@@ -257,75 +401,4 @@ void put_16x16_block(uint8_t x, uint8_t y, uint8_t logical_index) {
     };
 
     set_bkg_tiles(x, y, 2, 2, block);
-}
-
-uint8_t player_animation(uint8_t player_direction,uint8_t player_frame){
-    
-
-    if(player_direction==PLAYER_DIRECTION_LEFT){
-        if(player_frame==1){
-            player_frame = 0;
-            // tile index = column + row * witdth of tilemap
-                set_sprite_tile(0,13);
-                set_sprite_tile(1, 14);
-                set_sprite_tile(2, 21);
-                set_sprite_tile(3, 22);
-        }
-        else{player_frame = 1;
-                set_sprite_tile(0, 15);
-                set_sprite_tile(1, 16);
-                set_sprite_tile(2, 23);
-                set_sprite_tile(3, 24);
-    }
-
-}
-if(player_direction==PLAYER_DIRECTION_RIGHT){
-        if(player_frame==1){
-            player_frame = 0;
-                set_sprite_tile(0,29);
-                set_sprite_tile(1, 30);
-                set_sprite_tile(2, 37);
-                set_sprite_tile(3, 38);
-        }
-        else{player_frame = 1;
-                set_sprite_tile(0, 31);
-                set_sprite_tile(1, 32);
-                set_sprite_tile(2, 39);
-                set_sprite_tile(3, 40);
-    }
-
-}
-if(player_direction==PLAYER_DIRECTION_UP){
-        if(player_frame==1){
-            player_frame = 0;
-                set_sprite_tile(0,9);
-                set_sprite_tile(1, 10);
-                set_sprite_tile(2, 17);
-                set_sprite_tile(3, 18);
-        }
-        else{player_frame = 1;
-                set_sprite_tile(0, 11);
-                set_sprite_tile(1, 12);
-                set_sprite_tile(2, 19);
-                set_sprite_tile(3, 20);
-    }
-
-}
-if(player_direction==PLAYER_DIRECTION_DOWN){
-        if(player_frame==1){
-            player_frame = 0;
-                set_sprite_tile(0,25);
-                set_sprite_tile(1, 26);
-                set_sprite_tile(2, 33);
-                set_sprite_tile(3, 34);
-        }
-        else{player_frame = 1;
-                set_sprite_tile(0, 27);
-                set_sprite_tile(1, 28);
-                set_sprite_tile(2, 35);
-                set_sprite_tile(3, 36);
-    }
-
-}
-return player_frame;
 }
